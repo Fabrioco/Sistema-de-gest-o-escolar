@@ -5,3 +5,6 @@ layout-page
 
 /server/node_modules
 /server/src/generated/prisma
+
+.clj-kondo
+.lsp
