@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    command: npm run dev
+    container_name: client
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    command: sh -c "npx prisma db push && npm run dev"
+    container_name: server
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./server/node_modules:/server/node_modules
+      - ./server/prisma:/server/prisma
+      - ./server/app:/server/app
+    env_file:
+      - ./.env
+    environment:
+      - NODE_ENV=development
+    
+    
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_TCP_PORT=${DB_PORT}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 15
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    env_file:
+      - ./.env
+
+volumes:
+  db_data:
+    driver: local
+  node_modules:
+    driver: local
