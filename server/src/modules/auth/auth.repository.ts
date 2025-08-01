@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export class AuthRepository {
-  static async loginAdmin(data: LoginDTO) {
+  static async login(data: LoginDTO) {
     const findUser = await prisma.user.findUnique({
       where: {
         email: data.email,
