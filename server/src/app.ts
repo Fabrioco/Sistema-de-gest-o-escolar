@@ -8,3 +8,4 @@ app.use(express.json());
 app.use(indexRoutes);
 
 app.use(Middleware.errorZod)
+app.use(Middleware.errorApp)
