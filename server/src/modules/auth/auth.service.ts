@@ -1,8 +1,57 @@
+import { PrismaClient, User } from "@prisma/client";
+import { HttpError } from "../../errors/http-errors";
 import { AuthRepository } from "./auth.repository";
 import { LoginDTO } from "./dtos/login.dto";
+import jwt from "jsonwebtoken";
+import errorMessage from "../../errors/error-message";
+import { PasswordHelper } from "../../utils/password-helper";
 
-export class AuthService {
-  static async login(data: LoginDTO) {
-    return await AuthRepository.login(data);
+const prisma = new PrismaClient();
+
+class AuthService {
+  public async login(data: LoginDTO) {
+    const user = await this.existUser(data);
+
+    await this.verifyPassword(data.password, user.password);
+
+    return {
+      ...user,
+      ...(await this.createToken(user)),
+    };
+  }
+
+  private async existUser(data: LoginDTO) {
+    const user = await AuthRepository.findByCredential(data);
+
+    if (!user) {
+      throw HttpError.unauthorized(errorMessage.USER_NOT_FOUND);
+    }
+
+    return user;
+  }
+
+  private async verifyPassword(password: string, hash: string) {
+    const isMatch = await PasswordHelper.comparePassword(password, hash);
+    if (!isMatch) {
+      throw HttpError.unauthorized(errorMessage.CREDENTIAL_INVALID);
+    }
+  }
+
+  private async createToken(user: User) {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+      expiresIn: "1d",
+    });
+
+    return {
+      token,
+    };
   }
 }
+
+export default new AuthService();
