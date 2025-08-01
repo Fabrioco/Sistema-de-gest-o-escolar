@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { PasswordHelper } from '../../../src/utils/password-helper';
 const prisma = new PrismaClient();
 
 export async function createUsers() {
@@ -6,7 +7,7 @@ export async function createUsers() {
     data: {
       name: 'Admin User',
       email: 'admin@example.com',
-      password: 'admin123',
+      password: await PasswordHelper.hashPassword('admin123'),
       role: 'ADMIN',
     },
   });
@@ -15,7 +16,7 @@ export async function createUsers() {
     data: {
       name: 'Teacher John',
       email: 'john@example.com',
-      password: 'teacher123',
+      password: await PasswordHelper.hashPassword('teacher123'),
       role: 'TEACHER',
     },
   });
@@ -24,7 +25,7 @@ export async function createUsers() {
     data: {
       name: 'Student Ana',
       email: 'ana@example.com',
-      password: 'student123',
+      password: await PasswordHelper.hashPassword('student123'),
       role: 'STUDENT',
     },
   });
@@ -33,7 +34,7 @@ export async function createUsers() {
     data: {
       name: 'Responsible Maria',
       email: 'maria@example.com',
-      password: 'responsible123',
+      password: await PasswordHelper.hashPassword('responsible123'),
       role: 'RESPONSIBLE',
     },
   });
