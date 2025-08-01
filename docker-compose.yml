@@ -16,7 +16,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${PORT}:${PORT}"
-    command: sh -c "npx prisma db push && npm run dev"
     container_name: server
     depends_on:
       db:
@@ -25,6 +24,7 @@ services:
       - ./server/node_modules:/server/node_modules
       - ./server/prisma:/server/prisma
       - ./server/app:/server/app
+      - ./server:/usr/src/app
     env_file:
       - ./.env
     environment:
