@@ -12,3 +12,76 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         Int    @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  password   String
+  role       Role
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  student    Student?   @relation("UserStudent")
+  teacher    Teacher?   @relation("UserTeacher")
+  responsible Responsible? @relation("UserResponsible")
+}
+
+model Student {
+  id         Int    @id @default(autoincrement())
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [id], name: "UserStudent")
+  classId    Int?
+  class      SchoolClass? @relation(fields: [classId], references: [id])
+  grades     Grade[]
+  responsibleLinks ResponsibleStudent[]
+}
+
+model Teacher {
+  id         Int    @id @default(autoincrement())
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [id], name: "UserTeacher")
+  classes    SchoolClass[]
+}
+
+model Responsible {
+  id         Int    @id @default(autoincrement())
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [id], name: "UserResponsible")
+  students   ResponsibleStudent[]
+}
+
+model ResponsibleStudent {
+  id           Int   @id @default(autoincrement())
+  responsibleId Int
+  studentId    Int
+
+  responsible  Responsible @relation(fields: [responsibleId], references: [id])
+  student      Student     @relation(fields: [studentId], references: [id])
+
+  @@unique([responsibleId, studentId])
+}
+
+model SchoolClass {
+  id          Int    @id @default(autoincrement())
+  name        String
+  year        Int?
+  teacherId   Int
+  teacher     Teacher   @relation(fields: [teacherId], references: [id])
+  students    Student[]
+}
+
+model Grade {
+  id         Int    @id @default(autoincrement())
+  value      Float
+  subject    String
+  studentId  Int
+  student    Student   @relation(fields: [studentId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  RESPONSIBLE
+}
