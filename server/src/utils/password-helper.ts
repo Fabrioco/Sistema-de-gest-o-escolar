@@ -7,10 +7,6 @@ export class PasswordHelper {
   }
 
   static async comparePassword(password: string, hash: string) {
-    try {
-      return await bcrypt.compare(password, hash);
-    } catch (error) {
-      return
-    }
+    return await bcrypt.compare(password, hash);
   }
 }
