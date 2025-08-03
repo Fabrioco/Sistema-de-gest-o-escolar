@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 class AuthService {
   public async login(data: LoginDTO) {
-    const user = await this.existUser(data);
+    const user = await this.existUser(data.email);
 
     await this.verifyPassword(data.password, user.password);
 
@@ -20,8 +20,13 @@ class AuthService {
     };
   }
 
-  private async existUser(data: LoginDTO) {
-    const user = await AuthRepository.findByCredential(data);
+  public async forgotPassword(email: string) {
+    const user = await this.existUser(email);
+    return await this.createToken(user);
+  }
+
+  private async existUser(email:string) {
+    const user = await AuthRepository.findByCredential(email);
 
     if (!user) {
       throw HttpError.unauthorized(errorMessage.USER_NOT_FOUND);
