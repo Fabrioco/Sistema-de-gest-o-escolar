@@ -29,6 +29,7 @@ services:
       - ./.env
     environment:
       - NODE_ENV=development
+      - GOOGLE_PASS_KEY=${GOOGLE_PASS_KEY}
     
     
 

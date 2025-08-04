@@ -9,6 +9,19 @@ class AuthController {
 
     return res.status(200).json(result);
   }
+
+  public async forgotPassword(req: Request, res: Response) {
+    const { email } = req.body;
+    
+    await authService.forgotPassword(email); 
+    res.json({ message: "Email enviado com sucesso" });
+  }
+
+  public async resetPassword(req: Request, res: Response) {
+    const { email, password } = req.body;
+    await authService.resetPassword(email, password);
+    res.json({ message: "Senha alterada com sucesso" });
+  }
 }
 
 export default new AuthController();
