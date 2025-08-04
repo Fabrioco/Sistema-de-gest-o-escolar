@@ -5,6 +5,8 @@ import { LoginDTO } from "./dtos/login.dto";
 import jwt from "jsonwebtoken";
 import errorMessage from "../../errors/error-message";
 import { PasswordHelper } from "../../utils/password-helper";
+import crypto from "crypto";
+import { transporterMail } from "../../libs/transporter";
 
 const prisma = new PrismaClient();
 
@@ -22,10 +24,42 @@ class AuthService {
 
   public async forgotPassword(email: string) {
     const user = await this.existUser(email);
-    return await this.createToken(user);
+
+    const token = crypto.randomInt(100000, 1000000).toString();
+    const expires = new Date(Date.now() + 1000 * 60 * 15);
+
+    await AuthRepository.updateResetToken(user.email, token, expires);
+
+    await this.sendTokenToEmail(email, token);
   }
 
-  private async existUser(email:string) {
+  public async resetPassword(token: string, password: string) {
+    const user = await AuthRepository.findByResetToken(token);
+
+    if (!user?.resetTokenExpires || user.resetTokenExpires < new Date()) {
+      throw HttpError.unauthorized(errorMessage.TOKEN_EXPIRED);
+    }
+
+    const hashedPassword = await PasswordHelper.hashPassword(password);
+    await AuthRepository.updatePassword(user.email, hashedPassword);
+  }
+
+  private async sendTokenToEmail(email: string, token: string) {
+    try {
+      const info = await transporterMail.sendMail({
+        from: "Escola Api",
+        to: email,
+        subject: "Recuperação de senha",
+        html: `<b>Token: ${token}</b>`,
+      });
+
+      console.log("token enviado", token);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  private async existUser(email: string) {
     const user = await AuthRepository.findByCredential(email);
 
     if (!user) {

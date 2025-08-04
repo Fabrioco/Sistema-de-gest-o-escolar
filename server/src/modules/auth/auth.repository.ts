@@ -12,4 +12,39 @@ export class AuthRepository {
 
     return findUser;
   }
+
+  static async updateResetToken(email:string, token:string, expires:Date) {
+    return await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        resetToken: token,
+        resetTokenExpires: expires,
+      },
+    })
+  
+  }
+
+
+  static async findByResetToken(token: string) {
+    return await prisma.user.findFirst({
+      where: {
+        resetToken: token,
+      },
+    });
+  }
+
+  static async updatePassword(email: string, password: string) {
+    return await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password,
+        resetToken: null,
+        resetTokenExpires: null,
+      },
+    });
+  }
 }
